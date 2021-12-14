@@ -75,6 +75,8 @@ void delete_node(Node *node)
             break;
         case EMPTY:
             break;
+        default:
+            break;
     }
 
     free(node);

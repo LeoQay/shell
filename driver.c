@@ -11,7 +11,7 @@ int main(int argc, char **argv)
     if (is_error_launcher(launcher))
     {
         delete_launcher(launcher);
-        return 127;
+        return 1;
     }
 
     execute_root(launcher, launcher->root);

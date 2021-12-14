@@ -170,8 +170,8 @@ void execute_job(Launcher *launcher, Job *job)
 
         List *conveyor = cur->data;
 
-        if (prev_connect == CONNECT_AND && is_success(launcher->last) ||
-                prev_connect == CONNECT_OR && !is_success(launcher->last))
+        if ((prev_connect == CONNECT_AND && is_success(launcher->last)) ||
+        (prev_connect == CONNECT_OR && !is_success(launcher->last)))
         {
             execute_conveyor(launcher, conveyor);
 
@@ -246,7 +246,7 @@ void execute_conveyor(Launcher *launcher, List *conveyor)
     }
 
     List *processes = init_list();
-    int pid;
+    int pid = -1;
     Node *cur = conveyor->first;
     int pip_prev[2], pip_cur[2];
     pip_prev[0] = pip_cur[0] = pip_prev[1] = pip_cur[1] = -1;
