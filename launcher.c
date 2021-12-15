@@ -336,7 +336,31 @@ void execute_process(Launcher *launcher, Node *process)
 
 void execute_sub_process(Launcher *launcher, SubProcess *sub)
 {
+    if (sub == NULL || sub->root == NULL || sub->root->size == 0)
+    {
+        set_error_launcher(launcher, EXEC_EMPTY_SUB_PROCESS);
+        return;
+    }
 
+    execute_redirection(launcher, &sub->red);
+
+    if (is_error_launcher(launcher))
+    {
+        delete_launcher(launcher);
+        exit(127);
+    }
+
+    execute_root(launcher, sub->root);
+
+    if (is_error_launcher(launcher))
+    {
+        delete_launcher(launcher);
+        exit(127);
+    }
+
+    int exit_code = return_code(launcher->last->status);
+    delete_launcher(launcher);
+    exit(exit_code);
 }
 
 void execute_cmd(Launcher *launcher, Cmd *cmd)
