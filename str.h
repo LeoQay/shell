@@ -13,9 +13,10 @@ struct Str
 Str *init_str(void);
 Str *init_str_str(char *mas);
 Str *init_str_input(int fd);
+Str *init_str_input_all(int fd);
 
 void load_str(Str *str, char *mas);
-int input_str(Str *str, int fd);
+long input_str(Str *str, int fd);
 
 void delete_str(Str *str);
 

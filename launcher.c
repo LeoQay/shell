@@ -73,10 +73,11 @@ int return_code(int status)
     {
         return 128 + WTERMSIG(status);
     }
-    else
+    else if (WIFSTOPPED(status))
     {
-        return status;
+        return 128 + WSTOPSIG(status);
     }
+    else return 127;
 }
 
 bool is_error_launcher(Launcher *launcher)

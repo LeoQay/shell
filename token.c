@@ -89,7 +89,7 @@ bool is_error_token_list(List *token_store)
 
 bool is_end_sym(char sym)
 {
-    if (sym == '\n' || sym == '\0') return true;
+    if (sym == '\0') return true;
     return false;
 }
 

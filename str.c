@@ -29,6 +29,13 @@ Str *init_str_input(int fd)
     return str;
 }
 
+Str *init_str_input_all(int fd)
+{
+    Str *str = init_str();
+    while (0 < input_str(str, fd));
+    return str;
+}
+
 void load_str(Str *str, char *mas)
 {
     str->len = strlen(mas);
@@ -51,23 +58,25 @@ void delete_str(Str *str)
     free(str);
 }
 
-int input_str(Str *str, int fd)
+long input_str(Str *str, int fd)
 {
-    str->len = 0;
+    long counter = 0;
     long len;
     char cur;
     while (true)
     {
         len = read(fd, &cur, 1);
-        if (len <= 0 || cur == '\n') break;
+        if (len <= 0) break;
         if (str->len + 1 >= str->real_len)
         {
             str->real_len <<= 1;
             str->mas = realloc(str->mas, str->real_len);
         }
+        counter++;
         str->mas[str->len++] = cur;
+        if (cur == '\n') break;
     }
     str->mas[str->len] = '\0';
-    if (len == -1) return 1;
-    return 0;
+    if (len == -1) return -1;
+    return counter;
 }

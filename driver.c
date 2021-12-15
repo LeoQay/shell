@@ -4,7 +4,7 @@
 
 int main(int argc, char **argv)
 {
-    Str *str = init_str_input(0);
+    Str *str = init_str_input_all(0);
 
     Launcher *launcher = build_launcher(str);
 
@@ -19,17 +19,10 @@ int main(int argc, char **argv)
     if (is_error_launcher(launcher))
     {
         delete_launcher(launcher);
-        return 127;
+        return 1;
     }
 
+    int exit_code = return_code(launcher->last->status);
     delete_launcher(launcher);
-    return 0;
+    return exit_code;
 }
-
-// p1 | p2 || p3 || p4 && p5 | p6 | p7 ; p8 | p9 ;
-
-// (p1 & p2 < wer.txt ) & p3 | ( p4 < dwdf > srh | p5 -l >> res.txt)
-
-// (p1 & p2) & p3 | ( p4 | p5 -l)
-
-// ls -l > &
