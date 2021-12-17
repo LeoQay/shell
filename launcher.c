@@ -523,7 +523,7 @@ void print_error(Launcher *launcher)
             fprintf(stderr, "Empty input\n");
             break;
         case ERR_NONE:
-            fprintf(stderr, "No errors detected, but you here\n");
+            // No errors detected, but you here, it's ok
             break;
     }
 

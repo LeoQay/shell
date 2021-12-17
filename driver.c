@@ -1,6 +1,3 @@
-#include <unistd.h>
-#include <fcntl.h>
-
 #include "launcher.h"
 #include "parser.h"
 #include "str.h"
