@@ -20,17 +20,7 @@ Launcher *build_launcher(Str *str)
     if (root == NULL || root->size == 0)
     {
         launcher->error = true;
-
-        if (token_store->size > 2) {
-            launcher->error_type = UNEXPECT_TOKEN;
-        } else {
-            pop_front_list(token_store);
-            if (is_good_end(token_store)) {
-                launcher->error_type = EMPTY_INPUT;
-            } else {
-                launcher->error_type = UNEXPECT_TOKEN;
-            }
-        }
+        launcher->error_type = UNEXPECT_TOKEN;
 
         delete_list(token_store);
         return launcher;
