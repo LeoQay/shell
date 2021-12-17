@@ -4,7 +4,6 @@
 typedef enum
 {
     ERR_NONE = 0,
-    UNEXPECT,
     EXEC_WHERE_JOB,
     EXEC_EMPTY_ROOT,
     EXEC_EMPTY_JOB,

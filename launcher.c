@@ -4,6 +4,7 @@
 #include <fcntl.h>
 #include <errno.h>
 #include <sys/wait.h>
+#include <stdio.h>
 
 #include "error.h"
 #include "launcher.h"
@@ -16,7 +17,6 @@ Launcher *init_launcher(void)
     launcher->root = NULL;
     launcher->error = false;
     launcher->error_type = ERR_NONE;
-    launcher->service_ptr = NULL;
     return launcher;
 }
 
@@ -192,8 +192,7 @@ void execute_job(Launcher *launcher, Job *job)
         cur = cur->next;
     }
 
-    // IF YOU HERE, IT IS ERROR
-    set_error_launcher(launcher, UNEXPECT);
+    set_error_launcher(launcher, EXEC_WHERE_CONVEYOR);
 }
 
 void execute_job_background(Launcher *launcher, Job *job)
@@ -283,6 +282,7 @@ void execute_conveyor(Launcher *launcher, List *conveyor)
 
             execute_process(launcher, cur);
 
+            print_error(launcher);
             delete_launcher(launcher);
             exit(127);
         }
@@ -396,7 +396,6 @@ void execute_redirection(Launcher *launcher, ReDir *red)
             } else {
                 set_error_launcher(launcher, FILE_SYSTEM_ERR);
             }
-            launcher->service_ptr = red->input;
             return;
         }
 
@@ -448,7 +447,6 @@ void execute_redirection(Launcher *launcher, ReDir *red)
             } else {
                 set_error_launcher(launcher, FILE_SYSTEM_ERR);
             }
-            launcher->service_ptr = red->output;
             return;
         }
 
@@ -476,4 +474,58 @@ void execute_redirection(Launcher *launcher, ReDir *red)
             errno = 0;
         }
     }
+}
+
+void print_error(Launcher *launcher)
+{
+    fprintf(stderr, "Shell: ");
+
+    switch (launcher->error_type)
+    {
+        case EXEC_WRONG_CONVEYOR_CONNECT:
+        case EXEC_EMPTY_CONVEYOR:
+        case EXEC_EMPTY_SUB_PROCESS:
+        case EXEC_EMPTY_RE_DIR:
+        case EXEC_EMPTY_ROOT:
+        case EXEC_EMPTY_JOB:
+        case EXEC_EMPTY_CMD:
+        case EXEC_EMPTY_PROCESS:
+        case EXEC_WHERE_JOB:
+        case EXEC_WHERE_CONVEYOR:
+        case EXEC_WRONG_PROCESS:
+        case WRONG_OUTPUT_MODE:
+            fprintf(stderr, "Syntax error not found at the analysis stage\n");
+            break;
+        case UNEXPECT_TOKEN:
+            fprintf(stderr, "Unexpected token\n");
+            break;
+        case EXEC_ERR_PID_LIST:
+        case EXEC_UNEXPECT_PID:
+        case NOT_FIND_PID:
+            fprintf(stderr, "Unexpect pid\n");
+            break;
+        case EXEC_CANT_FORK:
+            fprintf(stderr, "Failed to create fork\n");
+            break;
+        case FILE_PERMISSION_DENIED:
+            fprintf(stderr, "File permission denied\n");
+            break;
+        case FILE_NOT_EXIST:
+            fprintf(stderr, "File doesn't exist\n");
+            break;
+        case FILE_SYSTEM_ERR:
+            fprintf(stderr ,"Can't open file\n");
+            break;
+        case DUP_ERR:
+            fprintf(stderr, "Failed to dup\n");
+            break;
+        case EMPTY_INPUT:
+            fprintf(stderr, "Empty input\n");
+            break;
+        case ERR_NONE:
+            fprintf(stderr, "No errors detected, but you here\n");
+            break;
+    }
+
+    fflush(stderr);
 }

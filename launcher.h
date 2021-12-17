@@ -15,10 +15,6 @@ struct Launcher {
 
     bool error;
     error_t error_type;
-
-    // if you want use it, library not help
-    // only init with NULL value
-    void *service_ptr;
 };
 
 Launcher *init_launcher(void);
@@ -26,6 +22,7 @@ void delete_launcher(Launcher *launcher);
 bool is_error_launcher(Launcher *launcher);
 void set_error_launcher(Launcher *launcher, error_t err);
 error_t reset_error_launcher(Launcher *launcher);
+void print_error(Launcher *launcher);
 
 bool is_conveyors_connect(connect_t connect);
 

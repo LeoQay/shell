@@ -1,23 +1,19 @@
+#include <unistd.h>
+#include <fcntl.h>
+
 #include "launcher.h"
 #include "parser.h"
 #include "str.h"
 
-#include <unistd.h>
-#include <fcntl.h>
-
 int main(int argc, char **argv)
 {
-    int fd = open("input.txt", O_RDONLY);
-    dup2(fd, 0);
-    close(fd);
-
-
     Str *str = init_str_input_all(0);
 
     Launcher *launcher = build_launcher(str);
 
     if (is_error_launcher(launcher))
     {
+        print_error(launcher);
         delete_launcher(launcher);
         return 1;
     }
@@ -26,6 +22,7 @@ int main(int argc, char **argv)
 
     if (is_error_launcher(launcher))
     {
+        print_error(launcher);
         delete_launcher(launcher);
         return 1;
     }

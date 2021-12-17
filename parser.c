@@ -17,26 +17,31 @@ Launcher *build_launcher(Str *str)
     Launcher *launcher = init_launcher();
     List *root = build_root(token_store);
 
+    if (root == NULL || root->size == 0)
+    {
+        launcher->error = true;
+
+        if (token_store->size > 2) {
+            launcher->error_type = UNEXPECT_TOKEN;
+        } else {
+            pop_front_list(token_store);
+            if (is_good_end(token_store)) {
+                launcher->error_type = EMPTY_INPUT;
+            } else {
+                launcher->error_type = UNEXPECT_TOKEN;
+            }
+        }
+
+        delete_list(token_store);
+        return launcher;
+    }
+
     if (!is_good_end(token_store))
     {
         delete_list(token_store);
         delete_list(root);
         launcher->error = true;
-        launcher->error_type = UNEXPECT;
-        return launcher;
-    }
-
-    if (root == NULL || root->size == 0)
-    {
-        launcher->error = true;
-
-        if (is_good_end(token_store)) {
-            launcher->error_type = EMPTY_INPUT;
-        } else {
-            launcher->error_type = UNEXPECT_TOKEN;
-        }
-
-        delete_list(token_store);
+        launcher->error_type = UNEXPECT_TOKEN;
         return launcher;
     }
 
