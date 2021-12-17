@@ -25,7 +25,8 @@ Launcher *build_launcher(Str *str)
         launcher->error_type = UNEXPECT;
         return launcher;
     }
-    else if (root == NULL)
+
+    if (root == NULL || root->size == 0)
     {
         launcher->error = true;
 
@@ -68,8 +69,10 @@ List *build_root(List *token_store)
         push_back_list(root, node);
 
         Token *token = token_store->first->data;
+
         if (!is_terminal(token)) return root;
         if (is_background(token)) job->background = true;
+
         pop_front_list(token_store);
 
         token = token_store->first->data;
@@ -93,10 +96,18 @@ Job *build_job(List *token_store)
     {
         List *conveyor = build_conveyor(token_store);
 
-        if (is_error_token_list(token_store) || conveyor == NULL)
+        if (is_error_token_list(token_store))
         {
             delete_job(job);
             delete_list(conveyor);
+            return NULL;
+        }
+
+        if (conveyor == NULL || conveyor->size == 0)
+        {
+            delete_job(job);
+            delete_list(conveyor);
+            push_error(token_store);
             return NULL;
         }
 
@@ -131,8 +142,16 @@ List *build_conveyor(List *token_store)
     {
         Node *process = build_process(token_store);
 
-        if (is_error_token_list(token_store) || process == NULL)
+        if (is_error_token_list(token_store))
         {
+            delete_node(process);
+            delete_list(conveyor);
+            return NULL;
+        }
+
+        if (process == NULL || process->data == NULL)
+        {
+            push_error(token_store);
             delete_node(process);
             delete_list(conveyor);
             return NULL;
@@ -169,9 +188,11 @@ Node *build_process(List *token_store)
             return NULL;
         }
 
-        if (cmd == NULL)
+        if (cmd == NULL || cmd->argv == NULL || cmd->argv[0] == NULL)
         {
+            push_error(token_store);
             delete_node(process);
+            delete_cmd(cmd);
             return NULL;
         }
 
@@ -205,6 +226,7 @@ SubProcess *build_sub_process(List *token_store)
 
     if (!is_open_bracket(token))
     {
+        push_error(token_store);
         delete_sub_process(sub);
         return NULL;
     }
@@ -223,6 +245,7 @@ SubProcess *build_sub_process(List *token_store)
 
     if (!is_close_bracket(token))
     {
+        push_error(token_store);
         delete_sub_process(sub);
         return NULL;
     }

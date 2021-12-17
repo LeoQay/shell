@@ -270,16 +270,20 @@ void execute_conveyor(Launcher *launcher, List *conveyor)
         if (pid == 0)
         {
             delete_list(processes);
+
             if (pip_prev[0] != -1) {
                 dup2(pip_prev[0], 0);
             }
             if (cur->next != NULL && pip_cur[1] != -1) {
                 dup2(pip_cur[1], 1);
             }
+
             close_pipe(pip_cur);
             close_pipe(pip_prev);
+
             execute_process(launcher, cur);
-            // ANYWAY, WE NEVER WILL BE HERE, but for safety
+
+            delete_launcher(launcher);
             exit(127);
         }
 
@@ -345,19 +349,11 @@ void execute_sub_process(Launcher *launcher, SubProcess *sub)
 
     execute_redirection(launcher, &sub->red);
 
-    if (is_error_launcher(launcher))
-    {
-        delete_launcher(launcher);
-        exit(127);
-    }
+    if (is_error_launcher(launcher)) return;
 
     execute_root(launcher, sub->root);
 
-    if (is_error_launcher(launcher))
-    {
-        delete_launcher(launcher);
-        exit(127);
-    }
+    if (is_error_launcher(launcher)) return;
 
     int exit_code = return_code(launcher->last->status);
     delete_launcher(launcher);
@@ -373,11 +369,10 @@ void execute_cmd(Launcher *launcher, Cmd *cmd)
     }
 
     execute_redirection(launcher, &cmd->red);
+
     if (is_error_launcher(launcher)) return;
 
     execvp(cmd->argv[0], cmd->argv);
-    delete_launcher(launcher);
-    exit(127);
 }
 
 void execute_redirection(Launcher *launcher, ReDir *red)
