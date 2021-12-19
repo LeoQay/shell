@@ -323,11 +323,14 @@ void build_re_dir(ReDir *red, List *token_store)
         }
 
         if (type == TOKEN_INPUT) {
+            delete_str(red->input);
             red->input = token->token;
         } else if (type == TOKEN_OUTPUT) {
+            delete_str(red->output);
             red->output = token->token;
             red->mode = START;
         } else if (type == TOKEN_OUTPUT_END) {
+            delete_str(red->output);
             red->output = token->token;
             red->mode = END;
         } else {
