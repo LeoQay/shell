@@ -10,6 +10,12 @@ int main(int argc, char **argv)
 
     if (is_error_launcher(launcher))
     {
+        if (launcher->error_type == EMPTY_INPUT)
+        {
+            delete_launcher(launcher);
+            return 0;
+        }
+
         print_error(launcher);
         delete_launcher(launcher);
         return 1;
