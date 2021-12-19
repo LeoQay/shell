@@ -73,10 +73,6 @@ int return_code(int status)
     {
         return 128 + WTERMSIG(status);
     }
-    else if (WIFSTOPPED(status))
-    {
-        return 128 + WSTOPSIG(status);
-    }
     else return 127;
 }
 
@@ -283,8 +279,16 @@ void execute_conveyor(Launcher *launcher, List *conveyor)
             execute_process(launcher, cur);
 
             print_error(launcher);
+
+            error_t err = launcher->error_type;
+
             delete_launcher(launcher);
-            exit(127);
+
+            if (err == EXEC_EXEC_FAILED) {
+                exit(127);
+            } else {
+                exit(1);
+            }
         }
 
         add_pid(processes, pid);
@@ -335,8 +339,6 @@ void execute_process(Launcher *launcher, Node *process)
         execute_cmd(launcher, process->data);
         return;
     }
-
-    set_error_launcher(launcher, EXEC_WRONG_PROCESS);
 }
 
 void execute_sub_process(Launcher *launcher, SubProcess *sub)
@@ -373,6 +375,8 @@ void execute_cmd(Launcher *launcher, Cmd *cmd)
     if (is_error_launcher(launcher)) return;
 
     execvp(cmd->argv[0], cmd->argv);
+
+    set_error_launcher(launcher, EXEC_EXEC_FAILED);
 }
 
 void execute_redirection(Launcher *launcher, ReDir *red)

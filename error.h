@@ -25,7 +25,8 @@ typedef enum
     NOT_FIND_PID,
     EXEC_UNEXPECT_PID,
     EMPTY_INPUT,
-    UNEXPECT_TOKEN
+    UNEXPECT_TOKEN,
+    EXEC_EXEC_FAILED
 } error_t;
 
 #endif //SHELL_ERROR_H
