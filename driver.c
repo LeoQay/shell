@@ -2,8 +2,14 @@
 #include "parser.h"
 #include "str.h"
 
+#include <unistd.h>
+#include <fcntl.h>
+
 int main(int argc, char **argv)
 {
+    int fd = open("input.txt", O_RDONLY);
+    dup2(fd, 0);
+
     Str *str = init_str_input_all(0);
 
     Launcher *launcher = build_launcher(str);

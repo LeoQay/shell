@@ -253,7 +253,7 @@ SubProcess *build_sub_process(List *token_store)
 
     pop_front_list(token_store);
 
-    build_re_dir(&sub->red, token_store);
+    build_cmd_redirection(&sub->red, token_store);
 
     if (is_error_token_list(token_store))
     {
@@ -264,39 +264,40 @@ SubProcess *build_sub_process(List *token_store)
     return sub;
 }
 
-// <cmd> := <program_name> [ <argument> ] <redirection>
+// <cmd> := <program_name> [ <cmd_append> ]
 Cmd *build_cmd(List *token_store)
 {
-    if (token_store->size == 0) return NULL;
-
-    Node *cur = token_store->first;
-    unsigned long counter = 0;
-
-    while (cur != NULL && ((Token*)cur->data)->type == TOKEN_WORD)
-    {
-        cur = cur->next;
-        counter++;
-    }
-
-    if (counter == 0) return NULL;
-
     Cmd *cmd = init_cmd();
 
-    cur = token_store->first;
-    cmd->argv = malloc(sizeof (char*) * (counter + 1));
-    for (unsigned long i = 0; i < counter; i++)
-    {
-        Str *str = ((Token*)cur->data)->token;
-        cmd->argv[i] = str->mas;
-        str->mas = NULL;
-        cur = cur->next;
-        pop_front_list(token_store);
-    }
-    cmd->argv[counter] = NULL;
+    Token *token = token_store->first->data;
 
-    build_re_dir(&cmd->red, token_store);
+    if (!is_word(token))
+    {
+        push_error(token_store);
+        delete_cmd(cmd);
+        return NULL;
+    }
+
+    List *argv = init_list();
+
+    push_back_list(argv, init_node_str(token->token));
+    token->token = NULL;
+    pop_front_list(token_store);
+
+    build_cmd_append(cmd, argv, token_store);
+
     if (is_error_token_list(token_store))
     {
+        delete_cmd(cmd);
+        delete_list(argv);
+        return NULL;
+    }
+
+    cmd->argv = convert_list_to_argv(argv);
+
+    if (cmd->argv == NULL)
+    {
+        push_error(token_store);
         delete_cmd(cmd);
         return NULL;
     }
@@ -304,42 +305,84 @@ Cmd *build_cmd(List *token_store)
     return cmd;
 }
 
-// <redirection> := [ <redirection_sign> <file_name> ]
-void build_re_dir(ReDir *red, List *token_store)
+// <cmd_append> := <arguments> or <redirection>
+void build_cmd_append(Cmd *cmd, List *argv, List *token_store)
 {
-    Node *cur = token_store->first;
+   while (true)
+   {
+       Token *cur_token = token_store->first->data;
 
-    while (is_redirection(cur->data))
+       if (is_word(cur_token))
+       {
+           build_cmd_arguments(argv, token_store);
+       }
+       else if (is_redirection(cur_token))
+       {
+           build_cmd_redirection(&cmd->red, token_store);
+       }
+       else break;
+
+       if (is_error_token_list(token_store)) return;
+   }
+}
+
+// <arguments> := [ <argument> ]
+void build_cmd_arguments(List *argv, List *token_store)
+{
+    Token *token = token_store->first->data;
+
+    while (is_word(token))
     {
-        token_t type = ((Token*)cur->data)->type;
-        cur = cur->next;
-        Token *token = cur->data;
+        push_back_list(argv, init_node_str(token->token));
+        token->token = NULL;
         pop_front_list(token_store);
 
-        if (token->type != TOKEN_WORD)
+        token = token_store->first->data;
+    }
+}
+
+// <redirection> := [ <redirection_sign> <file_name> ]
+void build_cmd_redirection(ReDir *red, List *token_store)
+{
+    Token *token = token_store->first->data;
+
+    while (is_redirection(token))
+    {
+        token_t red_type = token->type;
+
+        pop_front_list(token_store);
+
+        token = token_store->first->data;
+
+        if (!is_word(token))
         {
             push_error(token_store);
             return;
         }
 
-        if (type == TOKEN_INPUT) {
+        if (red_type == TOKEN_INPUT)
+        {
             delete_str(red->input);
             red->input = token->token;
-        } else if (type == TOKEN_OUTPUT) {
+        }
+        else if (red_type == TOKEN_OUTPUT)
+        {
             delete_str(red->output);
             red->output = token->token;
             red->mode = START;
-        } else if (type == TOKEN_OUTPUT_END) {
+        }
+        else if (red_type == TOKEN_OUTPUT_END)
+        {
             delete_str(red->output);
             red->output = token->token;
             red->mode = END;
-        } else {
-            // ERROR, IMPOSSIBLE
         }
+
         token->token = NULL;
 
-        cur = cur->next;
         pop_front_list(token_store);
+
+        token = token_store->first->data;
     }
 }
 
@@ -351,4 +394,44 @@ void push_error(List *token_store)
     node->data = err;
     node->data_type = TOKEN;
     push_front_list(token_store, node);
+}
+
+char **convert_list_to_argv(List *argv)
+{
+    if (argv == NULL) return NULL;
+
+    if (argv->size == 0)
+    {
+        delete_list(argv);
+        return NULL;
+    }
+
+    unsigned long size = argv->size;
+
+    Node *cur = argv->first;
+    for (unsigned long i = 0; i < size; i++)
+    {
+        if (cur->data_type != STR || cur->data == NULL)
+        {
+            delete_list(argv);
+            return NULL;
+        }
+        cur = cur->next;
+    }
+
+    char **mas = malloc(sizeof(char*) * (size + 1));
+    mas[size] = NULL;
+
+
+    for (unsigned long i = 0; i < size; i++)
+    {
+        Str *cur_str = argv->first->data;
+        mas[i] = cur_str->mas;
+        cur_str->mas = NULL;
+        pop_front_list(argv);
+    }
+
+    delete_list(argv);
+
+    return mas;
 }

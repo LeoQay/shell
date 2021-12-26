@@ -76,6 +76,25 @@ bool is_redirection(Token *token)
            token->type == TOKEN_INPUT;
 }
 
+bool is_word(Token *token)
+{
+    return token->type == TOKEN_WORD;
+}
+
+bool is_input(Token *token)
+{
+    return token->type == TOKEN_INPUT;
+}
+
+bool is_output(Token *token)
+{
+    return token->type == TOKEN_OUTPUT;
+}
+bool is_output_end(Token *token)
+{
+    return token->type == TOKEN_OUTPUT_END;
+}
+
 bool is_error(Token *token)
 {
     return token->type == TOKEN_ERROR;

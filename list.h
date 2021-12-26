@@ -20,7 +20,8 @@ typedef enum {
     TOKEN,
     JOB,
     SUBPROCESS,
-    PROCESS
+    PROCESS,
+    STR
 } node_t;
 
 typedef struct Node Node;

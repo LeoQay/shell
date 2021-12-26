@@ -49,6 +49,16 @@ Node *init_node(void)
     return node;
 }
 
+Node *init_node_str(Str *str)
+{
+    Node *node = init_node();
+
+    node->data_type = STR;
+    node->data = str;
+
+    return node;
+}
+
 void delete_node(Node *node)
 {
     if (node == NULL) return;
@@ -72,6 +82,9 @@ void delete_node(Node *node)
             break;
         case PROCESS:
             delete_process(node->data);
+            break;
+        case STR:
+            delete_str(node->data);
             break;
         case EMPTY:
             break;

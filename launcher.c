@@ -141,7 +141,7 @@ void execute_root(Launcher *launcher, List *root)
 
 void execute_job(Launcher *launcher, Job *job)
 {
-    if (job == NULL || job->conveyors->size == 0)
+    if (job == NULL || job->conveyors == NULL || job->conveyors->size == 0)
     {
         set_error_launcher(launcher, EXEC_EMPTY_JOB);
         return;
@@ -537,6 +537,9 @@ void print_error(Launcher *launcher)
             break;
         case ERR_NONE:
             // No errors detected, but you here, it's ok
+            break;
+        case EXEC_EXEC_FAILED:
+            fprintf(stderr, "Run program failed\n");
             break;
     }
 

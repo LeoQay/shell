@@ -44,8 +44,12 @@ bool is_sequence(Token *token);
 bool is_background(Token *token);
 bool is_terminal(Token *token);
 bool is_condition(Token *token);
+bool is_word(Token *token);
 bool is_redirection(Token *token);
 bool is_error(Token *token);
+bool is_input(Token *token);
+bool is_output(Token *token);
+bool is_output_end(Token *token);
 
 bool is_good_end(List *token_store);
 List *build_token_list(Str *str);
