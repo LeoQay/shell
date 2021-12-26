@@ -211,8 +211,17 @@ void execute_job_background(Launcher *launcher, Job *job)
 
     delete_list(launcher->expected);
     launcher->expected = init_list();
+
     job->background = false;
+
     execute_job(launcher, job);
+
+    if (is_error_launcher(launcher))
+    {
+        delete_launcher(launcher);
+        exit(1);
+    }
+
     int ret = return_code(launcher->last->status);
     delete_launcher(launcher);
     exit(ret);
